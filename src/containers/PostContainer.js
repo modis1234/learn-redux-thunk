@@ -1,26 +1,26 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { clearPost, getPost } from '../modules/posts';
-import Post from '../components/Post';
-
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { getPost } from "../modules/posts";
+import Post from "../components/Post";
+import { reducerUtils } from "../lib/asyncUtils";
 
 const PostContainer = ({ postId }) => {
-    const { data, loading, error } = useSelector(state => state.posts.post);
+  const { data, loading, error } = useSelector(
+    (state) => state.posts.post[postId] || reducerUtils.initial()
+  );
   const dispatch = useDispatch();
-    
+
   useEffect(() => {
+    if (data) return;
     dispatch(getPost(postId));
-    return () => {
-        // 언마운트 또는 postId가 바뀔때 싱행
-        dispatch(clearPost());
-    }
+    // eslint-disable-next-line
   }, [postId, dispatch]);
 
-  if (loading) return <div>로딩중...</div>;
+  if (loading && !data) return <div>로딩중...</div>;
   if (error) return <div>에러 발생!</div>;
   if (!data) return null;
 
   return <Post post={data} />;
-}
+};
 
 export default PostContainer;
