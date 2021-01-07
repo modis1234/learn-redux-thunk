@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getPost } from '../modules/posts';
+import { clearPost, getPost } from '../modules/posts';
 import Post from '../components/Post';
 
 
@@ -10,6 +10,10 @@ const PostContainer = ({ postId }) => {
     
   useEffect(() => {
     dispatch(getPost(postId));
+    return () => {
+        // 언마운트 또는 postId가 바뀔때 싱행
+        dispatch(clearPost());
+    }
   }, [postId, dispatch]);
 
   if (loading) return <div>로딩중...</div>;
