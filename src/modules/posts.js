@@ -5,6 +5,8 @@ import {
   handleAsyncActions,
   createPromiseThunkById,
   handleAsyncActionsById,
+  createPromiseThunkOfPost,
+  handleAsyncActionsOfPost,
 } from "../lib/asyncUtils";
 
 /* 액션 타입 */
@@ -19,14 +21,20 @@ const GET_POST = "GET_POST";
 const GET_POST_SUCCESS = "GET_POST_SUCCESS";
 const GET_POST_ERROR = "GET_POST_ERROR";
 
-const CREAR_POST = "CREAR_POST";
+const CREATE_POST = "CREATE_POST";
+const CREATE_POST_SUCCESS = "CREATE_POST_SUCCESS";
+const CREATE_POST_ERROR = "CREATE_POST_ERROR";
 
 // 아주 쉽게 thunk 함수를 만들 수 있게 되었습니다.
 export const getPosts = createPromiseThunk(GET_POSTS, postsAPI.getPosts);
 export const getPost = createPromiseThunkById(GET_POST, postsAPI.getPostById);
 export const goToHome = () => (dispatch, getState, { history }) => {
-  history.push('/');
+  history.push("/");
 };
+
+// POST thunk 함수
+export const postPost = createPromiseThunkOfPost(CREATE_POST, postsAPI.createPost);
+
 
 // initialState 쪽도 반복되는 코드를 initial() 함수를 사용해서 리팩토링 했습니다.
 const initialState = {
@@ -35,7 +43,9 @@ const initialState = {
 };
 
 const getPostsReducer = handleAsyncActions(GET_POSTS, "posts", true);
-const getPostReducer = handleAsyncActionsById(GET_POST, 'post', true);
+const getPostReducer = handleAsyncActionsById(GET_POST, "post", true);
+const postPostReducer = handleAsyncActionsOfPost(CREATE_POST, "posts", true); // 인수 key는 복수형으로 넣는다.
+
 
 export default function posts(state = initialState, action) {
   switch (action.type) {
@@ -47,11 +57,10 @@ export default function posts(state = initialState, action) {
     case GET_POST_SUCCESS:
     case GET_POST_ERROR:
       return getPostReducer(state, action);
-    case CREAR_POST:
-      return {
-        ...state,
-        post: reducerUtils.initial(),
-      };
+    case CREATE_POST:
+    case CREATE_POST_SUCCESS:
+    case CREATE_POST_ERROR:
+      return postPostReducer(state, action);
     default:
       return state;
   }

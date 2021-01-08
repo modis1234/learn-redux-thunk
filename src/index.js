@@ -16,7 +16,7 @@ const customHistory = createBrowserHistory();
 
 const store = createStore(
   rootReducer,
-  composeWithDevTools(applyMiddleware(ReduxThunk.withExtraArgument({ history: customHistory }), logger))
+  composeWithDevTools(applyMiddleware(ReduxThunk.withExtraArgument({ history: customHistory}), logger))
 );
 
 ReactDOM.render(

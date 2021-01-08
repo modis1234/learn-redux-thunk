@@ -32,7 +32,7 @@ export const createPromiseThunkById = (
 ) => {
   const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
 
-  return param => async dispatch => {
+  return (param) => async (dispatch) => {
     const id = idSelector(param);
     dispatch({ type, meta: id });
     try {
@@ -40,6 +40,28 @@ export const createPromiseThunkById = (
       dispatch({ type: SUCCESS, payload, meta: id });
     } catch (e) {
       dispatch({ type: ERROR, error: true, payload: e, meta: id });
+    }
+  };
+};
+
+export const createPromiseThunkOfPost = (type, promiseCreator) => {
+  const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
+  return (data) => async (dispatch) => {
+    // 요청시작
+    dispatch({ type });
+    // API 호출
+    try {
+      const payload = await promiseCreator(data);
+      // 성공했을 때
+      console.log('payload-->',payload)
+      dispatch({ type: SUCCESS, payload });
+    } catch (e) {
+      // 실패했을 때
+      dispatch({
+        type: ERROR,
+        payload: e,
+        error: true,
+      });
     }
   };
 };
@@ -87,15 +109,45 @@ export const handleAsyncActionsById = (type, key, keepData = false) => {
             [id]: reducerUtils.loading(
               // state[key][id]가 만들어져있지 않을 수도 있으니까 유효성을 먼저 검사 후 data 조회
               keepData ? state[key][id] && state[key][id].data : null
-            )
-          }
+            ),
+          },
         };
       case SUCCESS:
         return {
           ...state,
           [key]: {
             ...state[key],
-            [id]: reducerUtils.success(action.payload)
+            [id]: reducerUtils.success(action.payload),
+          },
+        };
+      case ERROR:
+        return {
+          ...state,
+          [key]: {
+            ...state[key],
+            [id]: reducerUtils.error(action.payload),
+          },
+        };
+      default:
+        return state;
+    }
+  };
+};
+
+// // id별로 처리하는 유틸함수
+export const handleAsyncActionsOfPost = (type, key, keepData = false) => {
+  const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
+  const reducer = (state, action) => {
+    switch(action.type) {
+      case type:
+        return state;
+      case SUCCESS:
+        return {
+          ...state,
+          [key]: {
+             loading: false,
+             error: null,
+             data: state[key].data.concat(action.payload)
           }
         };
       case ERROR:
@@ -103,14 +155,16 @@ export const handleAsyncActionsById = (type, key, keepData = false) => {
           ...state,
           [key]: {
             ...state[key],
-            [id]: reducerUtils.error(action.payload)
+            error: action.payload
           }
         };
       default:
         return state;
     }
-  };
+  }
+  return reducer;
 };
+
 
 // 리듀서에서 사용 할 수 있는 여러 유틸 함수들입니다.
 export const reducerUtils = {

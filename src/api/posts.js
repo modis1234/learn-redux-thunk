@@ -11,3 +11,9 @@ export const getPostById = async (id) => {
   const response = await axios.get(`/posts/${id}`);
   return response.data;
 };
+
+// 데이터 추가를 위한 POST 비동기 함수
+export const createPost = async (data) => {
+  const response = await axios.post(`/posts`, data);
+  return response.data;
+}
